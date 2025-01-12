@@ -1,0 +1,31 @@
+# Binary and Compiled Files
+main
+*.exe
+
+# Vendor Directory
+vendor/
+
+# IDE and Editor Configuration Files
+.vscode/
+.idea/
+
+# Log Files
+*.log
+logs
+./logs
+
+# Common Configuration Files
+.env
+config.json
+structure.txt
+
+# node_modules Directory
+node_modules/
+
+# Executable or Temporary Files
+*.out
+
+# Build Output Directories
+dist/
+build/
+tmp/

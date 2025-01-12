@@ -1,0 +1,58 @@
+package config
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"time"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+)
+
+func NewDatabase(env *EnvLoad) *gorm.DB {
+	username := env.DB_USER
+	password := env.DB_PASS
+	host := env.DB_HOST
+	port := env.DB_PORT
+	database := env.DB_NAME
+	require := env.DB_SSLMODE
+
+	idleConnection, errIdleConnection := strconv.Atoi(env.DB_POOL_IDLE)
+	maxConnection, errMaxConnection := strconv.Atoi(env.DB_POOL_MAX)
+	maxLifeTimeConnection, errMaxLifeTimeConnection := strconv.Atoi(env.DB_POOL_LIFETIME)
+	if errIdleConnection != nil || errMaxConnection != nil || errMaxLifeTimeConnection != nil {
+		log.Fatalf("Failed to convert string to integer")
+	}
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=Asia/Jakarta", host, username, password, database, port, require)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				SlowThreshold:              time.Second,   
+				LogLevel:                   logger.Silent, 
+				IgnoreRecordNotFoundError: true,           
+				ParameterizedQueries:      true,           
+				Colorful:                  false,          
+			  },
+		),
+	})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	connection, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get database connection: %v", err)
+	}
+
+	connection.SetMaxIdleConns(idleConnection)
+	connection.SetMaxOpenConns(maxConnection)
+	connection.SetConnMaxLifetime(time.Second * time.Duration(maxLifeTimeConnection))
+
+	return db
+}
