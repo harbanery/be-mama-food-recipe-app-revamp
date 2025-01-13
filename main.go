@@ -10,9 +10,10 @@ func main() {
 
 	db := config.NewDatabase(env)
 	validate := config.NewValidator(env)
+	policy := config.NewPolicy(env)
 	app := config.NewFiber(env)
 
-	config.Bootstrap(&config.BootstrapConfig{DB: db, App: app, Validate: validate})
+	config.Bootstrap(&config.BootstrapConfig{DB: db, App: app, Validate: validate, Policy: policy, Environment: env})
 
 	err := app.Listen(config.GetPort())
 	if err != nil {

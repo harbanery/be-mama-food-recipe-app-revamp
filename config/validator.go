@@ -1,7 +1,11 @@
 package config
 
-import "github.com/go-playground/validator/v10"
+import (
+	"mama-recipe/helper"
 
-func NewValidator(env *EnvLoad) *validator.Validate {
+	"github.com/go-playground/validator/v10"
+)
+
+func NewValidator(env *helper.EnvLoad) *validator.Validate {
 	return validator.New()
 }
