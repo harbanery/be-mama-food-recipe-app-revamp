@@ -21,5 +21,6 @@ type EnvLoad struct {
 	DB_POOL_MAX      string
 	DB_POOL_LIFETIME string
 
-	JWT_SECRET_KEY string
+	JWT_TOKEN_SECRET_KEY string
+	JWT_TOKEN_EXPIRATION string
 }

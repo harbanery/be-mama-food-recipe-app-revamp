@@ -58,6 +58,10 @@ func NewDatabase(env *helper.EnvLoad) *gorm.DB {
 
 	err = db.AutoMigrate(
 		&schema.User{},
+		&schema.Recipe{},
+		&schema.Save{},
+		&schema.Like{},
+		// &schema.Comment{},
 	)
 	if err != nil {
 		log.Fatalf("failed to auto migrate: %v", err)

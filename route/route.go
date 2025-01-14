@@ -1,9 +1,8 @@
 package route
 
 import (
-	"mama-recipe/app/authentication/signin"
-	"mama-recipe/app/authentication/signout"
-	"mama-recipe/app/authentication/signup"
+	"mama-recipe/app/account"
+	"mama-recipe/app/authentication"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,25 +11,23 @@ type RouteConfig struct {
 	App            *fiber.App
 	AuthMiddleware fiber.Handler
 	BodyMiddleware fiber.Handler
-	SignUpHandler  signup.SignUpHandler
-	SignInHandler  signin.SignInHandler
-	SignOutHandler signout.SignOutHandler
+	AuthHandler    authentication.AuthHandler
+	AccountHandler account.AccountHandler
 }
 
 func (c *RouteConfig) Setup() {
-	c.SignUpRoute()
-	c.SignInRoute()
-	c.SignOutRoute()
+	c.AuthRoute()
+	c.AccountRoute()
 }
 
-func (c *RouteConfig) SignUpRoute() {
-	c.App.Post("/signup", c.BodyMiddleware, c.SignUpHandler.Register)
+func (c *RouteConfig) AuthRoute() {
+	c.App.Post("/signup", c.BodyMiddleware, c.AuthHandler.Register)
+	c.App.Post("/signin", c.BodyMiddleware, c.AuthHandler.Login)
+	c.App.Get("/signout", c.AuthMiddleware, c.AuthHandler.Logout)
 }
 
-func (c *RouteConfig) SignInRoute() {
-	c.App.Post("/signin", c.BodyMiddleware, c.SignInHandler.Login)
-}
-
-func (c *RouteConfig) SignOutRoute() {
-	c.App.Get("/signout", c.AuthMiddleware, c.SignOutHandler.Logout)
+func (c *RouteConfig) AccountRoute() {
+	account := c.App.Group("/account")
+	account.Get("/profile", c.AuthMiddleware, c.AccountHandler.DetailProfile)
+	account.Put("/profile", c.AuthMiddleware, c.BodyMiddleware, c.AccountHandler.UpdateProfile)
 }

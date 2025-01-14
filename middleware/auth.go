@@ -9,7 +9,7 @@ import (
 )
 
 func NewAuthMiddleware(env *helper.EnvLoad) fiber.Handler {
-	secretKey := env.JWT_SECRET_KEY
+	secretKey := env.JWT_TOKEN_SECRET_KEY
 	return func(c *fiber.Ctx) error {
 		response := &helper.WebResponse[interface{}]{}
 
@@ -17,7 +17,7 @@ func NewAuthMiddleware(env *helper.EnvLoad) fiber.Handler {
 		if tokenAuth == "" {
 			response = helper.Response(c, 404, "Unathorized", nil)
 
-			c.JSON(response)
+			return c.JSON(response)
 		}
 
 		token, err := jwt.Parse(tokenAuth, func(token *jwt.Token) (interface{}, error) {
@@ -29,14 +29,14 @@ func NewAuthMiddleware(env *helper.EnvLoad) fiber.Handler {
 		if err != nil {
 			response = helper.Response(c, 404, "Unathorized", nil)
 
-			c.JSON(response)
+			return c.JSON(response)
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok || !token.Valid {
 			response = helper.Response(c, 404, "Unathorized", nil)
 
-			c.JSON(response)
+			return c.JSON(response)
 		}
 
 		c.Locals("id", claims["id"].(string))

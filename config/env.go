@@ -36,7 +36,8 @@ func CheckEnv() *helper.EnvLoad {
 		DB_POOL_MAX:      os.Getenv("DB_POOL_MAX"),
 		DB_POOL_LIFETIME: os.Getenv("DB_POOL_LIFETIME"),
 
-		JWT_SECRET_KEY: os.Getenv("JWT_SECRET_KEY"),
+		JWT_TOKEN_SECRET_KEY: os.Getenv("JWT_TOKEN_SECRET_KEY"),
+		JWT_TOKEN_EXPIRATION: os.Getenv("JWT_TOKEN_EXPIRATION"),
 	}
 }
 

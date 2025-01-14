@@ -20,7 +20,11 @@ func Response(ctx *fiber.Ctx, code int, message string, data any) *WebResponse[i
 
 	res.Code = code
 	res.Message = msg
-	res.Data = data
+	if data == nil {
+		res.Data = nil
+	} else {
+		res.Data = &data
+	}
 
 	return res
 }

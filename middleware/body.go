@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"mama-recipe/helper"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/microcosm-cc/bluemonday"
@@ -28,7 +29,9 @@ func NewBodyMiddleware(policy *bluemonday.Policy) fiber.Handler {
 
 			jsonData, err := json.Marshal(sanitized)
 			if err != nil {
-				return err
+				response := helper.Response(c, 400, err.Error(), nil)
+
+				return c.JSON(response)
 			}
 			c.Request().SetBody(jsonData)
 		}

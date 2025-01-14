@@ -1,9 +1,8 @@
 package config
 
 import (
-	"mama-recipe/app/authentication/signin"
-	"mama-recipe/app/authentication/signout"
-	"mama-recipe/app/authentication/signup"
+	"mama-recipe/app/account"
+	"mama-recipe/app/authentication"
 	"mama-recipe/helper"
 	"mama-recipe/middleware"
 	"mama-recipe/route"
@@ -46,17 +45,13 @@ func Bootstrap(config *BootstrapConfig) {
 		return c.JSON(res)
 	})
 
-	signUpRepository := signup.NewSignUpRepository()
-	signUpUseCase := signup.NewSignUpUseCase(config.DB, config.Validate, signUpRepository, config.Environment)
-	signUpHandler := signup.NewSignUpHandler(signUpUseCase)
+	authRepository := authentication.NewAuthRepository()
+	authUseCase := authentication.NewAuthUseCase(config.DB, config.Validate, authRepository, config.Environment)
+	authHandler := authentication.NewAuthHandler(authUseCase)
 
-	signInRepository := signin.NewSignInRepository()
-	signInUseCase := signin.NewSignInUseCase(config.DB, config.Validate, signInRepository, config.Environment)
-	signInHandler := signin.NewSignInHandler(signInUseCase)
-
-	signOutRepository := signout.NewSignOutRepository()
-	signOutUseCase := signout.NewSignOutUseCase(config.DB, config.Validate, signOutRepository, config.Environment)
-	signOutHandler := signout.NewSignOutHandler(signOutUseCase)
+	accountRepository := account.NewAccountRepository()
+	accountUseCase := account.NewAccountUseCase(config.DB, config.Validate, accountRepository, config.Environment)
+	accountHandler := account.NewAccountHandler(accountUseCase)
 
 	authMiddleware := middleware.NewAuthMiddleware(config.Environment)
 	bodyMiddleware := middleware.NewBodyMiddleware(config.Policy)
@@ -65,9 +60,8 @@ func Bootstrap(config *BootstrapConfig) {
 		App:            config.App,
 		AuthMiddleware: authMiddleware,
 		BodyMiddleware: bodyMiddleware,
-		SignUpHandler:  signUpHandler,
-		SignInHandler:  signInHandler,
-		SignOutHandler: signOutHandler,
+		AuthHandler:    authHandler,
+		AccountHandler: accountHandler,
 	}
 
 	route.Setup()
