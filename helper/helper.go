@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -40,4 +42,25 @@ func ToUppercase(s *string) *string {
 
 func FormatTime(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
+}
+
+func ToSlug(title, author string) string {
+	// Normalize title and author
+	normalize := func(input string) string {
+		// Convert to lowercase
+		result := strings.ToLower(input)
+		// Replace non-alphanumeric characters with a hyphen
+		re := regexp.MustCompile(`[^a-z0-9]+`)
+		result = re.ReplaceAllString(result, "-")
+		// Trim any leading or trailing hyphens
+		result = strings.Trim(result, "-")
+		return result
+	}
+
+	// Normalize title and author
+	slugTitle := normalize(title)
+	slugAuthor := normalize(author)
+
+	// Combine into the desired format
+	return fmt.Sprintf("%s-by-%s", slugTitle, slugAuthor)
 }

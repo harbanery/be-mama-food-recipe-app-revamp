@@ -19,6 +19,7 @@ type Recipe struct {
 	helper.UUID
 	Title       string  `json:"title"`
 	SubTitle    string  `json:"sub_title"`
+	Slug        string  `json:"slug"`
 	Header      string  `json:"header"`
 	Image       string  `json:"image"`
 	Description string  `json:"description"`
