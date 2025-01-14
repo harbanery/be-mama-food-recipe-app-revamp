@@ -33,6 +33,7 @@ func (c *RouteConfig) AccountRoute() {
 	account := c.App.Group("/account")
 	account.Get("/profile", c.AuthMiddleware, c.AccountHandler.DetailProfile)
 	account.Put("/profile", c.AuthMiddleware, c.BodyMiddleware, c.AccountHandler.UpdateProfile)
+	account.Put("/profile-photo", c.AuthMiddleware, c.BodyMiddleware, c.AccountHandler.UpdateProfilePhoto)
 }
 
 func (c *RouteConfig) RecipeRoute() {

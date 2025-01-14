@@ -7,8 +7,10 @@ import (
 )
 
 type AccountRepository interface {
-	CheckUserFromID(db *gorm.DB, id string) (schema.User, error)
-	UpdateUserFromID(db *gorm.DB, id string, data ProfileRequest) error
+	CheckUserID(db *gorm.DB, id string) error
+	GetProfile(db *gorm.DB, id string) *Profile
+	UpdateUser(db *gorm.DB, id string, data ProfileRequest) error
+	UpdateUserPhoto(db *gorm.DB, id, url string) error
 }
 
 type accountRepository struct{}
@@ -17,16 +19,23 @@ func NewAccountRepository() AccountRepository {
 	return &accountRepository{}
 }
 
-func (s *accountRepository) CheckUserFromID(db *gorm.DB, id string) (schema.User, error) {
-	var user *schema.User
-	db.First(&user, "id = ?", id)
-	if user.ID == "" {
-		return schema.User{}, gorm.ErrRecordNotFound
-	}
+const idQueryParam = `id = ?`
 
-	return *user, nil
+func (s *accountRepository) CheckUserID(db *gorm.DB, id string) error {
+	var user *schema.User
+	return db.First(&user, idQueryParam, id).Error
 }
 
-func (s *accountRepository) UpdateUserFromID(db *gorm.DB, id string, data ProfileRequest) error {
-	return db.Model(schema.User{}).Where("id = ?", id).Updates(data).Error
+func (s *accountRepository) GetProfile(db *gorm.DB, id string) *Profile {
+	var user *Profile
+	db.Model(&schema.User{}).First(&user, idQueryParam, id)
+	return user
+}
+
+func (s *accountRepository) UpdateUser(db *gorm.DB, id string, data ProfileRequest) error {
+	return db.Model(schema.User{}).Where(idQueryParam, id).Updates(data).Error
+}
+
+func (s *accountRepository) UpdateUserPhoto(db *gorm.DB, id, url string) error {
+	return db.Model(schema.User{}).Where(idQueryParam, id).Update("photo", url).Error
 }

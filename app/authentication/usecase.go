@@ -79,10 +79,10 @@ func (c *authUseCase) Login(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
 	}
 
 	request.Email = strings.ToLower(request.Email)
-	user, err := c.AuthRepository.CheckEmail(db, &request.Email)
-	if err != nil {
+	if err := c.AuthRepository.CheckEmail(db, &request.Email); err != nil {
 		return helper.Response(ctx, 400, "invalid email or password", nil)
 	}
+	user := c.AuthRepository.GetUserFromEmail(db, &request.Email)
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return helper.Response(ctx, 401, "invalid email or password", nil)
@@ -94,9 +94,15 @@ func (c *authUseCase) Login(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
 
 	tokenExp, err := strconv.Atoi(c.Environment.JWT_TOKEN_EXPIRATION)
 	if err != nil {
-		return helper.Response(ctx, 500, "environment not found", nil)
+		return helper.Response(ctx, 500, err.Error(), nil)
 	}
 	timeTokenExp := time.Now().Add(time.Hour * time.Duration(tokenExp))
+
+	refreshTokenExp, err := strconv.Atoi(c.Environment.JWT_REFRESH_TOKEN_EXPIRATION)
+	if err != nil {
+		return helper.Response(ctx, 500, err.Error(), nil)
+	}
+	timeRefreshTokenExp := time.Now().Add(time.Hour * time.Duration(refreshTokenExp))
 
 	token, err := helper.GenerateToken(c.Environment.JWT_TOKEN_SECRET_KEY, map[string]interface{}{
 		"id":    user.ID,
@@ -107,11 +113,24 @@ func (c *authUseCase) Login(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
 		return helper.Response(ctx, 500, "token not generated", nil)
 	}
 
-	timeFormat := timeTokenExp.Format("2006-01-02 15:04:05")
+	refresh_token, err := helper.GenerateToken(c.Environment.JWT_REFRESH_TOKEN_SECRET_KEY, map[string]interface{}{
+		"id":    user.ID,
+		"email": user.Email,
+		"exp":   timeRefreshTokenExp.Unix(),
+	})
+	if err != nil {
+		return helper.Response(ctx, 500, "refresh token not generated", nil)
+	}
+
+	timeTokenFormat := timeTokenExp.Format("2006-01-02 15:04:05")
+	timeRefreshTokenFormat := timeRefreshTokenExp.Format("2006-01-02 15:04:05")
+
 	res := helper.Response(ctx, 200, "signin success", &SignInResponse{
-		Email:                  request.Email,
-		AccessToken:            token,
-		AccessTokenTimeExpired: &timeFormat,
+		Email:                   request.Email,
+		AccessToken:             token,
+		RefreshToken:            &refresh_token,
+		AccessTokenTimeExpired:  &timeTokenFormat,
+		RefreshTokenTimeExpired: &timeRefreshTokenFormat,
 	})
 	return res
 }

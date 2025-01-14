@@ -9,12 +9,12 @@ type PhotoRequest struct {
 }
 
 type Profile struct {
-	ID           string           `json:"id"`
-	Fullname     string           `json:"fullname"`
-	Photo        string           `json:"photo"`
-	MyRecipes    []PersonalRecipe `json:"my_recipes"`
-	SavedRecipes []SaveRecipe     `json:"saved_recipes"`
-	SavedLikes   []LikeRecipe     `json:"liked_recipes"`
+	ID       string `json:"id"`
+	Fullname string `json:"fullname"`
+	Photo    string `json:"photo"`
+	// MyRecipes    []PersonalRecipe `json:"my_recipes"`
+	// SavedRecipes []SaveRecipe     `json:"saved_recipes"`
+	// SavedLikes   []LikeRecipe     `json:"liked_recipes"`
 }
 
 type PersonalRecipe struct {

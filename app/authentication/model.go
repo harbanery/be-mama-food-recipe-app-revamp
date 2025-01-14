@@ -1,5 +1,11 @@
 package authentication
 
+type User struct {
+	ID       string `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type SignUpRequest struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
@@ -15,7 +21,7 @@ type SignInRequest struct {
 type SignInResponse struct {
 	Email                   string  `json:"email"`
 	AccessToken             string  `json:"access_token"`
-	AccessTokenTimeExpired  *string `json:"access_token_time_expired,omitempty"`
 	RefreshToken            *string `json:"refresh_token,omitempty"`
+	AccessTokenTimeExpired  *string `json:"access_token_time_expired,omitempty"`
 	RefreshTokenTimeExpired *string `json:"refresh_token_time_expired,omitempty"`
 }

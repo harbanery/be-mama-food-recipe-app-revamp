@@ -8,19 +8,12 @@ import (
 	"mama-recipe/middleware"
 	"mama-recipe/route"
 
+	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/microcosm-cc/bluemonday"
 	"gorm.io/gorm"
 )
-
-type BootstrapConfig struct {
-	DB          *gorm.DB
-	App         *fiber.App
-	Validate    *validator.Validate
-	Policy      *bluemonday.Policy
-	Environment *helper.EnvLoad
-}
 
 type Information struct {
 	URL           string  `json:"url"`
@@ -28,6 +21,14 @@ type Information struct {
 	VersionNumber *string `json:"version_number,omitempty"`
 	Info          *string `json:"info,omitempty"`
 	Message       string  `json:"message"`
+}
+type BootstrapConfig struct {
+	DB          *gorm.DB
+	App         *fiber.App
+	Validate    *validator.Validate
+	Policy      *bluemonday.Policy
+	Environment *helper.EnvLoad
+	Cloudinary  *cloudinary.Cloudinary
 }
 
 func Bootstrap(config *BootstrapConfig) {
@@ -51,7 +52,7 @@ func Bootstrap(config *BootstrapConfig) {
 	authHandler := authentication.NewAuthHandler(authUseCase)
 
 	accountRepository := account.NewAccountRepository()
-	accountUseCase := account.NewAccountUseCase(config.DB, config.Validate, accountRepository, config.Environment)
+	accountUseCase := account.NewAccountUseCase(config.DB, config.Validate, accountRepository, config.Environment, config.Cloudinary)
 	accountHandler := account.NewAccountHandler(accountUseCase)
 
 	recipeRepository := recipe.NewRecipeRepository()
