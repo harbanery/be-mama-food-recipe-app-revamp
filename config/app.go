@@ -56,7 +56,7 @@ func Bootstrap(config *BootstrapConfig) {
 	accountHandler := account.NewAccountHandler(accountUseCase)
 
 	recipeRepository := recipe.NewRecipeRepository()
-	recipeUseCase := recipe.NewRecipeUseCase(config.DB, config.Validate, recipeRepository, config.Environment)
+	recipeUseCase := recipe.NewRecipeUseCase(config.DB, config.Validate, recipeRepository, config.Environment, config.Cloudinary)
 	recipeHandler := recipe.NewRecipeHandler(recipeUseCase)
 
 	authMiddleware := middleware.NewAuthMiddleware(config.Environment)

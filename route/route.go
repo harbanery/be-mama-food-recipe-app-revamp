@@ -39,6 +39,9 @@ func (c *RouteConfig) AccountRoute() {
 
 func (c *RouteConfig) RecipeRoute() {
 	recipe := c.App.Group("/recipe")
+	recipe.Get("/list", c.RecipeHandler.ListRecipe)
+	recipe.Get("/detail", c.BodyMiddleware, c.RecipeHandler.DetailRecipe)
 	recipe.Post("/add", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.AddRecipe)
-	recipe.Get("/list", c.AuthMiddleware, c.RecipeHandler.ListRecipe)
+	recipe.Put("/update", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.UpdateRecipe)
+	recipe.Delete("/delete", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.DeleteRecipe)
 }

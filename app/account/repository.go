@@ -42,5 +42,5 @@ func (s *accountRepository) UpdateUserPhoto(db *gorm.DB, id, url string) error {
 }
 
 func (s *accountRepository) DeleteUserPhoto(db *gorm.DB, id string) error {
-	return db.Model(schema.User{}).Where(idQueryParam, id).Update("photo", "").Error
+	return db.Model(schema.User{}).Where(idQueryParam, id).Update("photo", nil).Error
 }
