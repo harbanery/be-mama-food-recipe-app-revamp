@@ -1,11 +1,13 @@
 package account
 
+import "mime/multipart"
+
 type ProfileRequest struct {
 	Fullname string `json:"fullname" validate:"required"`
 }
 
 type PhotoRequest struct {
-	Photo string `json:"photo" validate:"required"`
+	Photo []*multipart.FileHeader `json:"photo" validate:"required"`
 }
 
 type Profile struct {

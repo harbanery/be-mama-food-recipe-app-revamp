@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"fmt"
 	"mama-recipe/helper"
 
 	"github.com/cloudinary/cloudinary-go/v2"
@@ -14,6 +15,7 @@ type AccountUseCase interface {
 	DetailProfile(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	UpdateProfile(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	UpdateProfilePhoto(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
+	DeleteProfilePhoto(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 }
 
 type accountUseCase struct {
@@ -61,8 +63,7 @@ func (c *accountUseCase) UpdateProfile(ctx *fiber.Ctx) *helper.WebResponse[inter
 	}
 
 	request := new(ProfileRequest)
-	err := helper.ValidateRequest(ctx, c.Validate, request)
-	if err != nil {
+	if err := helper.ValidateRequest(ctx, c.Validate, request); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
@@ -70,8 +71,7 @@ func (c *accountUseCase) UpdateProfile(ctx *fiber.Ctx) *helper.WebResponse[inter
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
-	res := helper.Response(ctx, 200, "update profile success", nil)
-	return res
+	return helper.Response(ctx, 200, "update profile success", nil)
 }
 
 func (c *accountUseCase) UpdateProfilePhoto(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
@@ -83,14 +83,13 @@ func (c *accountUseCase) UpdateProfilePhoto(ctx *fiber.Ctx) *helper.WebResponse[
 		return helper.Response(ctx, 400, profileNotFound, nil)
 	}
 
-	photo, err := ctx.FormFile("photo")
-	if err != nil {
-		if err.Error() == "there is no uploaded file associated with the given key" {
-			return helper.Response(ctx, 400, "photo is required", nil)
-		}
-		return helper.Response(ctx, 500, err.Error(), nil)
+	request := new(PhotoRequest)
+	if err := helper.ValidateFormRequest(ctx, c.Validate, request); err != nil {
+		fmt.Println("validation photo error")
+		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
+	photo := request.Photo[0]
 	if err := helper.ValidateImageRequest(photo); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
@@ -104,6 +103,26 @@ func (c *accountUseCase) UpdateProfilePhoto(ctx *fiber.Ctx) *helper.WebResponse[
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
-	res := helper.Response(ctx, 200, "update profile success", nil)
-	return res
+	return helper.Response(ctx, 200, "update profile photo success", nil)
+}
+
+func (c *accountUseCase) DeleteProfilePhoto(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
+	db := c.DB.WithContext(ctx.Context())
+	context := context.WithValue(ctx.Context(), requestCtxKey, ctx.Context())
+
+	userID := ctx.Locals("id").(string)
+	if err := c.AccountRepository.CheckUserID(db, userID); err != nil {
+		return helper.Response(ctx, 400, profileNotFound, nil)
+	}
+	user := c.AccountRepository.GetProfile(db, userID)
+
+	if err := helper.DeleteFile(&context, c.Cloudinary, &user.Photo); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	if err := c.AccountRepository.DeleteUserPhoto(db, userID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	return helper.Response(ctx, 200, "delete profile photo success", nil)
 }

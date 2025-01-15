@@ -6,6 +6,7 @@ type AccountHandler interface {
 	DetailProfile(ctx *fiber.Ctx) error
 	UpdateProfile(ctx *fiber.Ctx) error
 	UpdateProfilePhoto(ctx *fiber.Ctx) error
+	DeleteProfilePhoto(ctx *fiber.Ctx) error
 }
 
 type accountHandler struct {
@@ -30,5 +31,10 @@ func (c *accountHandler) UpdateProfile(ctx *fiber.Ctx) error {
 
 func (c *accountHandler) UpdateProfilePhoto(ctx *fiber.Ctx) error {
 	res := c.UseCase.UpdateProfilePhoto(ctx)
+	return ctx.Status(res.Code).JSON(res)
+}
+
+func (c *accountHandler) DeleteProfilePhoto(ctx *fiber.Ctx) error {
+	res := c.UseCase.DeleteProfilePhoto(ctx)
 	return ctx.Status(res.Code).JSON(res)
 }

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cloudinary/cloudinary-go/v2"
@@ -36,4 +38,21 @@ func UploadFile(context *context.Context, cloudinary *cloudinary.Cloudinary, fil
 	}
 
 	return &uploadResult.SecureURL, nil
+}
+
+func DeleteFile(context *context.Context, cloudinary *cloudinary.Cloudinary, url *string) error {
+	filenameWithExtension := path.Base(*url)
+
+	filename := strings.TrimSuffix(filenameWithExtension, path.Ext(filenameWithExtension))
+
+	destroyParams := uploader.DestroyParams{
+		PublicID: filename,
+	}
+
+	_, err := cloudinary.Upload.Destroy(*context, destroyParams)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return nil
 }

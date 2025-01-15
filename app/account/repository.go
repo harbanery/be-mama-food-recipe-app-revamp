@@ -11,6 +11,7 @@ type AccountRepository interface {
 	GetProfile(db *gorm.DB, id string) *Profile
 	UpdateUser(db *gorm.DB, id string, data ProfileRequest) error
 	UpdateUserPhoto(db *gorm.DB, id, url string) error
+	DeleteUserPhoto(db *gorm.DB, id string) error
 }
 
 type accountRepository struct{}
@@ -38,4 +39,8 @@ func (s *accountRepository) UpdateUser(db *gorm.DB, id string, data ProfileReque
 
 func (s *accountRepository) UpdateUserPhoto(db *gorm.DB, id, url string) error {
 	return db.Model(schema.User{}).Where(idQueryParam, id).Update("photo", url).Error
+}
+
+func (s *accountRepository) DeleteUserPhoto(db *gorm.DB, id string) error {
+	return db.Model(schema.User{}).Where(idQueryParam, id).Update("photo", "").Error
 }

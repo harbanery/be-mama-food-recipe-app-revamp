@@ -34,6 +34,7 @@ func (c *RouteConfig) AccountRoute() {
 	account.Get("/profile", c.AuthMiddleware, c.AccountHandler.DetailProfile)
 	account.Put("/profile", c.AuthMiddleware, c.BodyMiddleware, c.AccountHandler.UpdateProfile)
 	account.Put("/profile-photo", c.AuthMiddleware, c.BodyMiddleware, c.AccountHandler.UpdateProfilePhoto)
+	account.Delete("/profile-photo", c.AuthMiddleware, c.AccountHandler.DeleteProfilePhoto)
 }
 
 func (c *RouteConfig) RecipeRoute() {
