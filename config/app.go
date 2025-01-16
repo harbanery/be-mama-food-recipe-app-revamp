@@ -2,6 +2,7 @@ package config
 
 import (
 	"mama-recipe/app/account"
+	"mama-recipe/app/action"
 	"mama-recipe/app/authentication"
 	"mama-recipe/app/recipe"
 	"mama-recipe/helper"
@@ -59,6 +60,10 @@ func Bootstrap(config *BootstrapConfig) {
 	recipeUseCase := recipe.NewRecipeUseCase(config.DB, config.Validate, recipeRepository, config.Environment, config.Cloudinary)
 	recipeHandler := recipe.NewRecipeHandler(recipeUseCase)
 
+	actionRepository := action.NewActionRepository()
+	actionUseCase := action.NewActionUseCase(config.DB, config.Validate, actionRepository, config.Environment)
+	actionHandler := action.NewActionHandler(actionUseCase)
+
 	authMiddleware := middleware.NewAuthMiddleware(config.Environment)
 	bodyMiddleware := middleware.NewBodyMiddleware(config.Policy)
 
@@ -69,6 +74,7 @@ func Bootstrap(config *BootstrapConfig) {
 		AuthHandler:    authHandler,
 		AccountHandler: accountHandler,
 		RecipeHandler:  recipeHandler,
+		ActionHandler:  actionHandler,
 	}
 
 	route.Setup()
@@ -90,7 +96,7 @@ func Bootstrap(config *BootstrapConfig) {
 		res := &Information{
 			URL:     c.Request().URI().String(),
 			Path:    c.Path(),
-			Message: "Route not found",
+			Message: fiber.ErrBadRequest.Message,
 		}
 
 		return c.Status(fiber.StatusNotFound).JSON(res)

@@ -2,6 +2,7 @@ package route
 
 import (
 	"mama-recipe/app/account"
+	"mama-recipe/app/action"
 	"mama-recipe/app/authentication"
 	"mama-recipe/app/recipe"
 
@@ -15,12 +16,14 @@ type RouteConfig struct {
 	AuthHandler    authentication.AuthHandler
 	AccountHandler account.AccountHandler
 	RecipeHandler  recipe.RecipeHandler
+	ActionHandler  action.ActionHandler
 }
 
 func (c *RouteConfig) Setup() {
 	c.AuthRoute()
 	c.AccountRoute()
 	c.RecipeRoute()
+	c.ActionRoute()
 }
 
 func (c *RouteConfig) AuthRoute() {
@@ -44,4 +47,10 @@ func (c *RouteConfig) RecipeRoute() {
 	recipe.Post("/add", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.AddRecipe)
 	recipe.Put("/update", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.UpdateRecipe)
 	recipe.Delete("/delete", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.DeleteRecipe)
+}
+
+func (c *RouteConfig) ActionRoute() {
+	action := c.App.Group("/action")
+	action.Post("/save", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.ActionSave)
+	action.Post("/like", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.ActionLike)
 }
