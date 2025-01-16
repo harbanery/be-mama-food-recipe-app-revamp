@@ -133,14 +133,14 @@ func (c *recipeUseCase) ActionDetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[i
 	if err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	} else if saveID != nil {
-		actionResponse.IsLiked = true
+		actionResponse.IsSaved = true
 	}
 
 	likeID, err := c.RecipeRepository.CheckLike(db, recipeID, userID)
 	if err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	} else if likeID != nil {
-		actionResponse.IsSaved = true
+		actionResponse.IsLiked = true
 	}
 
 	return helper.Response(ctx, 200, "action recipe success", actionResponse)
