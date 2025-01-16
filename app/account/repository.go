@@ -8,7 +8,7 @@ import (
 
 type AccountRepository interface {
 	CheckUserID(db *gorm.DB, id string) error
-	GetProfile(db *gorm.DB, id string) *Profile
+	GetProfile(db *gorm.DB, id string) *ProfileResponse
 	UpdateUser(db *gorm.DB, id string, data ProfileRequest) error
 	UpdateUserPhoto(db *gorm.DB, id, url string) error
 	DeleteUserPhoto(db *gorm.DB, id string) error
@@ -27,9 +27,15 @@ func (s *accountRepository) CheckUserID(db *gorm.DB, id string) error {
 	return db.First(&user, idQueryParam, id).Error
 }
 
-func (s *accountRepository) GetProfile(db *gorm.DB, id string) *Profile {
-	var user *Profile
-	db.Model(&schema.User{}).First(&user, idQueryParam, id)
+func (s *accountRepository) GetProfile(db *gorm.DB, id string) *ProfileResponse {
+	var user *ProfileResponse
+	db.Model(&schema.User{}).Preload("MyRecipes").Preload("SavedRecipes", func(db *gorm.DB) *gorm.DB {
+		var savedRecipe []*schema.Save
+		return db.Preload("Recipe").Find(&savedRecipe)
+	}).Preload("LikedRecipes", func(db *gorm.DB) *gorm.DB {
+		var likedRecipe []*schema.Like
+		return db.Preload("Recipe").Find(&likedRecipe)
+	}).First(&user, idQueryParam, id)
 	return user
 }
 

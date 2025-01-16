@@ -10,29 +10,31 @@ type PhotoRequest struct {
 	Photo []*multipart.FileHeader `json:"photo" validate:"required"`
 }
 
-type Profile struct {
-	ID       string `json:"id"`
-	Fullname string `json:"fullname"`
-	Photo    string `json:"photo"`
-	// MyRecipes    []PersonalRecipe `json:"my_recipes"`
-	// SavedRecipes []SaveRecipe     `json:"saved_recipes"`
-	// SavedLikes   []LikeRecipe     `json:"liked_recipes"`
+type ProfileResponse struct {
+	ID           string        `json:"id"`
+	Fullname     string        `json:"fullname"`
+	Photo        string        `json:"photo"`
+	MyRecipes    []*Recipe     `json:"my_recipes" gorm:"foreignKey:AuthorID"`
+	SavedRecipes []*SaveRecipe `json:"saved_recipes" gorm:"foreignKey:UserID"`
+	LikedRecipes []*LikeRecipe `json:"liked_recipes" gorm:"foreignKey:UserID"`
 }
 
-type PersonalRecipe struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Image string `json:"image"`
+type Recipe struct {
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Slug     string `json:"slug"`
+	Image    string `json:"image"`
+	AuthorID string `json:"author_id"`
 }
 
 type SaveRecipe struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Image string `json:"image"`
+	UserID   string  `json:"user_id"`
+	RecipeID string  `json:"recipe_id"`
+	Recipe   *Recipe `json:"recipe" gorm:"foreignKey:RecipeID"`
 }
 
 type LikeRecipe struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Image string `json:"image"`
+	UserID   string  `json:"user_id"`
+	RecipeID string  `json:"recipe_id"`
+	Recipe   *Recipe `json:"recipe" gorm:"foreignKey:RecipeID"`
 }
