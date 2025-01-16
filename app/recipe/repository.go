@@ -14,6 +14,8 @@ type RecipeRepository interface {
 	CreateRecipe(db *gorm.DB, data *schema.Recipe) error
 	EditRecipe(db *gorm.DB, id string, data *schema.Recipe) error
 	DeleteRecipe(db *gorm.DB, id string) error
+	CheckSave(db *gorm.DB, recipeID, userID string) (*string, error)
+	CheckLike(db *gorm.DB, recipeID, userID string) (*string, error)
 }
 
 type recipeRepository struct{}
@@ -22,11 +24,12 @@ func NewRecipeRepository() RecipeRepository {
 	return &recipeRepository{}
 }
 
-const idQueryParams string = "id = ?"
+const idQueryParam string = "id = ?"
+const idActionQueryParams string = "recipe_id = ? AND user_id = ?"
 
 func (s *recipeRepository) CheckUser(db *gorm.DB, id string, email ...*string) error {
 	var user *schema.User
-	db.First(&user, idQueryParams, id)
+	db.First(&user, idQueryParam, id)
 
 	if email != nil {
 		db.Where("email = ?", email)
@@ -46,7 +49,7 @@ func (s *recipeRepository) GetRecipes(db *gorm.DB) ([]*RecipeResponse, error) {
 
 func (s *recipeRepository) GetRecipe(db *gorm.DB, id string) (*schema.Recipe, error) {
 	var recipe *schema.Recipe
-	db.First(&recipe, idQueryParams, id)
+	db.First(&recipe, idQueryParam, id)
 
 	if recipe.ID == "" {
 		return nil, gorm.ErrRecordNotFound
@@ -60,6 +63,12 @@ func (s *recipeRepository) DetailRecipe(db *gorm.DB, slug string) (*DetailRecipe
 	db.Model(&schema.Recipe{}).Preload("Author", func(db *gorm.DB) *gorm.DB {
 		var author []*Author
 		return db.Model(&schema.User{}).Find(&author)
+	}).Preload("Saves", func(db *gorm.DB) *gorm.DB {
+		var save []*Save
+		return db.Model(&schema.Save{}).Find(&save)
+	}).Preload("Likes", func(db *gorm.DB) *gorm.DB {
+		var save []*Like
+		return db.Model(&schema.Like{}).Find(&save)
 	}).First(&recipe, "slug = ?", slug)
 
 	if recipe.ID == "" {
@@ -74,9 +83,31 @@ func (s *recipeRepository) CreateRecipe(db *gorm.DB, data *schema.Recipe) error 
 }
 
 func (s *recipeRepository) EditRecipe(db *gorm.DB, id string, data *schema.Recipe) error {
-	return db.Model(&schema.Recipe{}).Where(idQueryParams, id).Updates(data).Error
+	return db.Model(&schema.Recipe{}).Where(idQueryParam, id).Updates(data).Error
 }
 
 func (s *recipeRepository) DeleteRecipe(db *gorm.DB, id string) error {
-	return db.Delete(&schema.Recipe{}, "id = ?", id).Error
+	return db.Delete(&schema.Recipe{}, idQueryParam, id).Error
+}
+
+func (s *recipeRepository) CheckSave(db *gorm.DB, recipeID, userID string) (*string, error) {
+	var save *schema.Save
+	db.First(&save, idActionQueryParams, recipeID, userID)
+
+	if save.ID == "" || db.Error == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+
+	return &save.ID, nil
+}
+
+func (s *recipeRepository) CheckLike(db *gorm.DB, recipeID, userID string) (*string, error) {
+	var save *schema.Like
+	db.First(&save, idActionQueryParams, recipeID, userID)
+
+	if save.ID == "" || db.Error == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+
+	return &save.ID, nil
 }

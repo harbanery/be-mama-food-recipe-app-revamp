@@ -15,6 +15,7 @@ type RecipeUseCase interface {
 	AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	ListRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	DetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
+	ActionDetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	UpdateRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	DeleteRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 }
@@ -109,6 +110,40 @@ func (c *recipeUseCase) DetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interfa
 	}
 
 	return helper.Response(ctx, 200, "detail recipe success", recipe)
+}
+
+func (c *recipeUseCase) ActionDetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
+	db := c.DB.WithContext(ctx.Context())
+	recipeID := ctx.Query("id")
+	if recipeID == "" {
+		return helper.Response(ctx, 400, "recipe id is required", nil)
+	}
+
+	userID := ctx.Locals("id").(string)
+	if err := c.RecipeRepository.CheckUser(db, userID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	var actionResponse = &ActionRecipeResponse{
+		IsSaved: false,
+		IsLiked: false,
+	}
+
+	saveID, err := c.RecipeRepository.CheckSave(db, recipeID, userID)
+	if err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	} else if saveID != nil {
+		actionResponse.IsLiked = true
+	}
+
+	likeID, err := c.RecipeRepository.CheckLike(db, recipeID, userID)
+	if err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	} else if likeID != nil {
+		actionResponse.IsSaved = true
+	}
+
+	return helper.Response(ctx, 200, "action recipe success", actionResponse)
 }
 
 func (c *recipeUseCase) UpdateRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
