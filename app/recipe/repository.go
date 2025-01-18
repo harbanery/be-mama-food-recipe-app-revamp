@@ -40,10 +40,12 @@ func (s *recipeRepository) CheckUser(db *gorm.DB, id string, email ...*string) e
 
 func (s *recipeRepository) GetRecipes(db *gorm.DB) ([]*RecipeResponse, error) {
 	var recipes []*RecipeResponse
-	db.Model(&schema.Recipe{}).Preload("Author", func(db *gorm.DB) *gorm.DB {
-		var author []*Author
-		return db.Model(&schema.User{}).Find(&author)
-	}).Order("created_at desc").Find(&recipes)
+	db.Model(&schema.Recipe{}).
+		Preload("Author", func(db *gorm.DB) *gorm.DB {
+			var author []*Author
+			return db.Model(&schema.User{}).Find(&author)
+		}).Order("created_at desc").Find(&recipes)
+
 	return recipes, nil
 }
 
@@ -63,13 +65,7 @@ func (s *recipeRepository) DetailRecipe(db *gorm.DB, slug string) (*DetailRecipe
 	db.Model(&schema.Recipe{}).Preload("Author", func(db *gorm.DB) *gorm.DB {
 		var author []*Author
 		return db.Model(&schema.User{}).Find(&author)
-	}).Preload("Saves", func(db *gorm.DB) *gorm.DB {
-		var save []*Save
-		return db.Model(&schema.Save{}).Find(&save)
-	}).Preload("Likes", func(db *gorm.DB) *gorm.DB {
-		var save []*Like
-		return db.Model(&schema.Like{}).Find(&save)
-	}).First(&recipe, "slug = ?", slug)
+	}).Preload("Saves").Preload("Likes").First(&recipe, "slug = ?", slug)
 
 	if recipe.ID == "" {
 		return nil, gorm.ErrRecordNotFound

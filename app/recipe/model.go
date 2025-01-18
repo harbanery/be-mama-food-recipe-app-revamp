@@ -67,6 +67,6 @@ type DetailRecipeResponse struct {
 	Header      string    `json:"header"`
 	Image       string    `json:"image"`
 	Description string    `json:"description"`
-	Saves       []*Save   `json:"saves"  gorm:"foreignKey:RecipeID"`
+	Saves       []*Save   `json:"saves" gorm:"foreignKey:RecipeID"`
 	Likes       []*Like   `json:"likes" gorm:"foreignKey:RecipeID"`
 }
