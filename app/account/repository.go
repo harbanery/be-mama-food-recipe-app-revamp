@@ -29,7 +29,10 @@ func (s *accountRepository) CheckUserID(db *gorm.DB, id string) error {
 
 func (s *accountRepository) GetProfile(db *gorm.DB, id string) *ProfileResponse {
 	var user *ProfileResponse
-	db.Model(&schema.User{}).Preload("MyRecipes").Preload("SavedRecipes", func(db *gorm.DB) *gorm.DB {
+	db.Model(&schema.User{}).Preload("MyRecipes", func(db *gorm.DB) *gorm.DB {
+		var myRecipes []*schema.Recipe
+		return db.Find(&myRecipes)
+	}).Preload("SavedRecipes", func(db *gorm.DB) *gorm.DB {
 		var savedRecipe []*schema.Save
 		return db.Preload("Recipe").Find(&savedRecipe)
 	}).Preload("LikedRecipes", func(db *gorm.DB) *gorm.DB {
