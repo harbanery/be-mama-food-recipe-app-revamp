@@ -89,12 +89,16 @@ func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{
 func (c *recipeUseCase) ListRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
 	db := c.DB.WithContext(ctx.Context())
 
-	recipes, err := c.RecipeRepository.GetRecipes(db)
+	paramsrequest := helper.NewParamsRequest(ctx)
+
+	recipes, counts, err := c.RecipeRepository.GetRecipes(db, paramsrequest)
 	if err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
-	return helper.Response(ctx, 200, "list recipe success", recipes)
+	response := helper.NewParamsResponse(recipes, counts, paramsrequest)
+
+	return helper.Response(ctx, 200, "list recipe success", response)
 }
 
 func (c *recipeUseCase) DetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {

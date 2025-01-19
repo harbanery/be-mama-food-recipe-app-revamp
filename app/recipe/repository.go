@@ -1,6 +1,7 @@
 package recipe
 
 import (
+	"mama-recipe/helper"
 	"mama-recipe/schema"
 
 	"gorm.io/gorm"
@@ -8,7 +9,7 @@ import (
 
 type RecipeRepository interface {
 	CheckUser(db *gorm.DB, id string, email ...*string) error
-	GetRecipes(db *gorm.DB) ([]*RecipeResponse, error)
+	GetRecipes(db *gorm.DB, params *helper.ParamsRequest) ([]*RecipeResponse, *helper.RecordCount, error)
 	GetRecipe(db *gorm.DB, id string) (*schema.Recipe, error)
 	DetailRecipe(db *gorm.DB, slug string) (*DetailRecipeResponse, error)
 	CreateRecipe(db *gorm.DB, data *schema.Recipe) error
@@ -38,15 +39,27 @@ func (s *recipeRepository) CheckUser(db *gorm.DB, id string, email ...*string) e
 	return db.Error
 }
 
-func (s *recipeRepository) GetRecipes(db *gorm.DB) ([]*RecipeResponse, error) {
+func (s *recipeRepository) GetRecipes(db *gorm.DB, params *helper.ParamsRequest) ([]*RecipeResponse, *helper.RecordCount, error) {
 	var recipes []*RecipeResponse
-	db.Model(&schema.Recipe{}).
-		Preload("Author", func(db *gorm.DB) *gorm.DB {
-			var author []*Author
-			return db.Model(&schema.User{}).Find(&author)
-		}).Order("created_at desc").Find(&recipes)
+	var recipeCounts helper.RecordCount
 
-	return recipes, nil
+	query := db.Model(&schema.Recipe{})
+
+	if params.Sort == "popularity" {
+		query = query.Order("(SELECT COUNT(*) FROM saves WHERE saves.recipe_id = recipes.id) " + params.OrderBy).
+			Order("(SELECT COUNT(*) FROM likes WHERE likes.recipe_id = recipes.id) " + params.OrderBy)
+	} else {
+		query = query.Order(params.Sort + " " + params.OrderBy)
+	}
+
+	query = query.Offset((params.Page - 1) * params.Limit).Limit(params.Limit).Find(&recipes).Count(&recipeCounts.TotalData)
+	recipeCounts.FilteredData = int64(len(recipes))
+
+	if query.Error != nil {
+		return nil, nil, query.Error
+	}
+
+	return recipes, &recipeCounts, nil
 }
 
 func (s *recipeRepository) GetRecipe(db *gorm.DB, id string) (*schema.Recipe, error) {

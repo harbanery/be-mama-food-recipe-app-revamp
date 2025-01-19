@@ -15,6 +15,11 @@ type WebResponse[T any] struct {
 	Data    *T     `json:"data,omitempty"`
 }
 
+type RecordCount struct {
+	FilteredData int64
+	TotalData    int64
+}
+
 func EmptyObject() interface{} {
 	return make(map[string]interface{})
 }
