@@ -12,6 +12,7 @@ type RecipeRepository interface {
 	GetRecipes(db *gorm.DB, params *helper.ParamsRequest) ([]*RecipeResponse, *helper.RecordCount, error)
 	GetRecipe(db *gorm.DB, id string) (*schema.Recipe, error)
 	DetailRecipe(db *gorm.DB, slug string) (*DetailRecipeResponse, error)
+	DetailVideo(db *gorm.DB, id, recipeID string) (*VideoResponse, error)
 	CreateRecipe(db *gorm.DB, data *schema.Recipe) error
 	EditRecipe(db *gorm.DB, id string, data *schema.Recipe) error
 	DeleteRecipe(db *gorm.DB, id string) error
@@ -78,7 +79,7 @@ func (s *recipeRepository) DetailRecipe(db *gorm.DB, slug string) (*DetailRecipe
 	db.Model(&schema.Recipe{}).Preload("Author", func(db *gorm.DB) *gorm.DB {
 		var author []*Author
 		return db.Model(&schema.User{}).Find(&author)
-	}).Preload("Saves").Preload("Likes").Preload("Comments.User", func(db *gorm.DB) *gorm.DB {
+	}).Preload("Videos").Preload("Saves").Preload("Likes").Preload("Comments.User", func(db *gorm.DB) *gorm.DB {
 		var user []*User
 		return db.Model(&schema.User{}).Find(&user)
 	}).First(&recipe, "slug = ?", slug)
@@ -88,6 +89,17 @@ func (s *recipeRepository) DetailRecipe(db *gorm.DB, slug string) (*DetailRecipe
 	}
 
 	return recipe, nil
+}
+
+func (s *recipeRepository) DetailVideo(db *gorm.DB, id, recipeID string) (*VideoResponse, error) {
+	var video *VideoResponse
+	db.Model(&schema.Video{}).First(&video, "id = ? AND recipe_id = ?", id, recipeID)
+
+	if video.ID == "" {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	return video, nil
 }
 
 func (s *recipeRepository) CreateRecipe(db *gorm.DB, data *schema.Recipe) error {

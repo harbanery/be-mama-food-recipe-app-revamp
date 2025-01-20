@@ -54,6 +54,11 @@ func ValidateFormRequest(ctx *fiber.Ctx, valid *validator.Validate, request any)
 			if len(files) > 0 {
 				requestValue.Field(i).Set(reflect.ValueOf(files))
 			}
+		} else if field.Type == reflect.TypeOf([]string{}) {
+			formValue := form.Value[jsonTag]
+			if len(formValue) > 0 {
+				requestValue.Field(i).Set(reflect.ValueOf(formValue))
+			}
 		} else {
 			formValue := form.Value[jsonTag]
 			if len(formValue) > 0 {
@@ -104,5 +109,20 @@ func ValidateImageRequest(file *multipart.FileHeader) error {
 	}
 
 	return nil
+}
 
+func ValidateVideoRequest(file *multipart.FileHeader) error {
+	allowedTypes := []string{"video/mp4", "video/webm", "video/ogg"}
+	if !slices.Contains(allowedTypes, file.Header.Get("Content-Type")) {
+		return fiber.NewError(419, "invalid type file")
+	}
+
+	allowedExtension := []string{"mp4", "webm", "ogg"}
+	splitFileName := strings.Split(file.Filename, ".")
+	extension := splitFileName[len(splitFileName)-1]
+	if !slices.Contains(allowedExtension, extension) {
+		return fiber.NewError(419, "invalid type file")
+	}
+
+	return nil
 }

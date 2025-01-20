@@ -27,6 +27,20 @@ type Comment struct {
 	Description string `json:"description"`
 }
 
+type Video struct {
+	ID       string `json:"id"`
+	RecipeID string `json:"recipe_id"`
+	URL      string `json:"url"`
+}
+
+type VideoResponse struct {
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Title     string    `json:"title"`
+	Source    string    `json:"source"`
+	URL       string    `json:"url"`
+}
+
 type ActionRecipeResponse struct {
 	IsSaved bool `json:"is_saved"`
 	IsLiked bool `json:"is_liked"`
@@ -43,6 +57,8 @@ type RecipeRequest struct {
 	Title       string                  `json:"title" validate:"required"`
 	SubTitle    string                  `json:"sub_title" validate:"required"`
 	Image       []*multipart.FileHeader `json:"image"  validate:"required"`
+	Video       []*multipart.FileHeader `json:"video"`
+	VideoURL    []string                `json:"video_url"`
 	Header      string                  `json:"header" validate:"required"`
 	Description string                  `json:"description" validate:"required"`
 }
@@ -66,6 +82,7 @@ type DetailRecipeResponse struct {
 	Slug        string     `json:"slug"`
 	Header      string     `json:"header"`
 	Image       string     `json:"image"`
+	Videos      []*Video   `json:"videos" gorm:"foreignKey:RecipeID"`
 	Description string     `json:"description"`
 	Saves       []*Save    `json:"saves" gorm:"foreignKey:RecipeID"`
 	Likes       []*Like    `json:"likes" gorm:"foreignKey:RecipeID"`

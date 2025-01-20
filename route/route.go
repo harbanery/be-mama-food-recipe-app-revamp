@@ -42,8 +42,9 @@ func (c *RouteConfig) AccountRoute() {
 
 func (c *RouteConfig) RecipeRoute() {
 	recipe := c.App.Group("/recipe")
-	recipe.Get("/list", c.RecipeHandler.ListRecipe)
+	recipe.Get("/list", c.BodyMiddleware, c.RecipeHandler.ListRecipe)
 	recipe.Get("/detail", c.BodyMiddleware, c.RecipeHandler.DetailRecipe)
+	recipe.Get("/video", c.BodyMiddleware, c.RecipeHandler.VideoDetailRecipe)
 	recipe.Get("/action", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.ActionDetailRecipe)
 	recipe.Post("/add", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.AddRecipe)
 	recipe.Put("/update", c.AuthMiddleware, c.BodyMiddleware, c.RecipeHandler.UpdateRecipe)

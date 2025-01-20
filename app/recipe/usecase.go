@@ -15,6 +15,7 @@ type RecipeUseCase interface {
 	AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	ListRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	DetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
+	VideoDetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	ActionDetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	UpdateRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	DeleteRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
@@ -59,6 +60,11 @@ func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{
 
 	username := helper.UsernameFromEmail(email)
 	slug := helper.ToSlug(request.Title, username)
+
+	if len(request.Image) > 1 {
+		return helper.Response(ctx, 400, "only 1 image allowed", nil)
+	}
+
 	photo := request.Image[0]
 	if err := helper.ValidateImageRequest(photo); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
@@ -69,12 +75,39 @@ func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
+	videos := []*schema.Video{}
+	for _, video := range request.Video {
+		if err := helper.ValidateVideoRequest(video); err != nil {
+			return helper.Response(ctx, 400, err.Error(), nil)
+		}
+
+		videoUrl, err := helper.UploadFile(&context, c.Cloudinary, video)
+		if err != nil {
+			return helper.Response(ctx, 400, err.Error(), nil)
+		}
+
+		videos = append(videos, &schema.Video{
+			Title:  request.Title,
+			Source: "upload",
+			URL:    *videoUrl,
+		})
+	}
+
+	for _, videoUrl := range request.VideoURL {
+		videos = append(videos, &schema.Video{
+			Title:  request.Title,
+			Source: "url",
+			URL:    videoUrl,
+		})
+	}
+
 	recipe := &schema.Recipe{
 		Title:       request.Title,
 		SubTitle:    request.SubTitle,
 		Slug:        slug,
 		Header:      request.Header,
 		Image:       *photoUrl,
+		Videos:      videos,
 		Description: request.Description,
 		AuthorID:    userID,
 	}
@@ -114,6 +147,26 @@ func (c *recipeUseCase) DetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interfa
 	}
 
 	return helper.Response(ctx, 200, "detail recipe success", recipe)
+}
+
+func (c *recipeUseCase) VideoDetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
+	db := c.DB.WithContext(ctx.Context())
+	videoID := ctx.Query("video_id")
+	if videoID == "" {
+		return helper.Response(ctx, 400, "video id is required", nil)
+	}
+
+	recipeID := ctx.Query("recipe_id")
+	if recipeID == "" {
+		return helper.Response(ctx, 400, "recipe id is required", nil)
+	}
+
+	response, err := c.RecipeRepository.DetailVideo(db, videoID, recipeID)
+	if err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	return helper.Response(ctx, 200, "detail video recipe success", response)
 }
 
 func (c *recipeUseCase) ActionDetailRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {

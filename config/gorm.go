@@ -56,14 +56,14 @@ func NewDatabase(env *helper.EnvLoad) *gorm.DB {
 	connection.SetMaxOpenConns(maxConnection)
 	connection.SetConnMaxLifetime(time.Second * time.Duration(maxLifeTimeConnection))
 
-	err = db.AutoMigrate(
+	if err := db.AutoMigrate(
 		&schema.User{},
 		&schema.Recipe{},
+		&schema.Video{},
 		&schema.Save{},
 		&schema.Like{},
 		&schema.Comment{},
-	)
-	if err != nil {
+	); err != nil {
 		log.Fatalf("failed to auto migrate: %v", err)
 	}
 
