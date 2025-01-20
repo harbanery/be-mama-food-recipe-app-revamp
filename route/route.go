@@ -54,4 +54,6 @@ func (c *RouteConfig) ActionRoute() {
 	action := c.App.Group("/action")
 	action.Post("/save", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.ActionSave)
 	action.Post("/like", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.ActionLike)
+	action.Post("/comment", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.AddComment)
+	action.Delete("/comment", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.RemoveComment)
 }

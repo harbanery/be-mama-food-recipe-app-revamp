@@ -11,6 +11,8 @@ import (
 type ActionUseCase interface {
 	ActionSave(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 	ActionLike(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
+	AddComment(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
+	RemoveComment(ctx *fiber.Ctx) *helper.WebResponse[interface{}]
 }
 
 type actionUseCase struct {
@@ -37,7 +39,7 @@ func (c *actionUseCase) ActionSave(ctx *fiber.Ctx) *helper.WebResponse[interface
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
-	request := new(SaveRequest)
+	request := new(ActionRequest)
 	if err := helper.ValidateRequest(ctx, c.Validate, request); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
@@ -72,7 +74,7 @@ func (c *actionUseCase) ActionLike(ctx *fiber.Ctx) *helper.WebResponse[interface
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
-	request := new(LikeRequest)
+	request := new(ActionRequest)
 	if err := helper.ValidateRequest(ctx, c.Validate, request); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
@@ -98,4 +100,52 @@ func (c *actionUseCase) ActionLike(ctx *fiber.Ctx) *helper.WebResponse[interface
 	}
 
 	return helper.Response(ctx, 200, "like success", nil)
+}
+
+func (c *actionUseCase) AddComment(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
+	db := c.DB.WithContext(ctx.Context())
+
+	userID := ctx.Locals("id").(string)
+	if err := c.ActionRepository.CheckUser(db, userID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	request := new(CommentRequest)
+	if err := helper.ValidateRequest(ctx, c.Validate, request); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	if err := c.ActionRepository.CheckRecipe(db, request.RecipeID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	if err := c.ActionRepository.CreateComment(db, request, userID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	return helper.Response(ctx, 200, "comment success", nil)
+}
+
+func (c *actionUseCase) RemoveComment(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
+	db := c.DB.WithContext(ctx.Context())
+
+	userID := ctx.Locals("id").(string)
+	if err := c.ActionRepository.CheckUser(db, userID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	request := new(ActionRequest)
+	if err := helper.ValidateRequest(ctx, c.Validate, request); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	if err := c.ActionRepository.CheckRecipe(db, request.RecipeID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	if err := c.ActionRepository.DeleteComment(db, request.RecipeID, userID); err != nil {
+		return helper.Response(ctx, 400, err.Error(), nil)
+	}
+
+	return helper.Response(ctx, 200, "comment removed success", nil)
 }

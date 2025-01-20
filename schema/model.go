@@ -17,18 +17,18 @@ type User struct {
 
 type Recipe struct {
 	helper.UUID
-	Title       string  `json:"title"`
-	SubTitle    string  `json:"sub_title"`
-	Slug        string  `json:"slug"`
-	Header      string  `json:"header"`
-	Image       string  `json:"image"`
-	Description string  `json:"description"`
-	Author      User    `json:"author" gorm:"foreignKey:AuthorID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
-	AuthorID    string  `json:"author_id"`
-	Saves       []*Save `json:"saves" gorm:"foreignKey:RecipeID"`
-	Likes       []*Like `json:"likes" gorm:"foreignKey:RecipeID"`
+	Title       string     `json:"title"`
+	SubTitle    string     `json:"sub_title"`
+	Slug        string     `json:"slug"`
+	Header      string     `json:"header"`
+	Image       string     `json:"image"`
+	Description string     `json:"description"`
+	Author      User       `json:"author" gorm:"foreignKey:AuthorID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
+	AuthorID    string     `json:"author_id"`
+	Saves       []*Save    `json:"saves" gorm:"foreignKey:RecipeID"`
+	Likes       []*Like    `json:"likes" gorm:"foreignKey:RecipeID"`
+	Comments    []*Comment `json:"comments" gorm:"foreignKey:RecipeID"`
 	// Video 		[]*Video `json:"videos" gorm:"foreignKey:RecipeID"`
-	// Comments 	[]*Comment `json:"comments" gorm:"foreignKey:RecipeID"`
 }
 
 type Save struct {
@@ -45,4 +45,13 @@ type Like struct {
 	Recipe   Recipe `json:"recipe" gorm:"foreignKey:RecipeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	UserID   string `json:"user_id"`
 	User     User   `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+type Comment struct {
+	helper.UUID
+	RecipeID    string `json:"recipe_id"`
+	Recipe      Recipe `json:"recipe" gorm:"foreignKey:RecipeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	UserID      string `json:"user_id"`
+	User        User   `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Description string `json:"description"`
 }

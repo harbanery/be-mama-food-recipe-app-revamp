@@ -78,7 +78,10 @@ func (s *recipeRepository) DetailRecipe(db *gorm.DB, slug string) (*DetailRecipe
 	db.Model(&schema.Recipe{}).Preload("Author", func(db *gorm.DB) *gorm.DB {
 		var author []*Author
 		return db.Model(&schema.User{}).Find(&author)
-	}).Preload("Saves").Preload("Likes").First(&recipe, "slug = ?", slug)
+	}).Preload("Saves").Preload("Likes").Preload("Comments.User", func(db *gorm.DB) *gorm.DB {
+		var user []*User
+		return db.Model(&schema.User{}).Find(&user)
+	}).First(&recipe, "slug = ?", slug)
 
 	if recipe.ID == "" {
 		return nil, gorm.ErrRecordNotFound

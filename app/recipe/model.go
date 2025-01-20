@@ -20,6 +20,13 @@ type Like struct {
 	UserID   string `json:"user_id"`
 }
 
+type Comment struct {
+	RecipeID    string `json:"recipe_id"`
+	UserID      string `json:"user_id"`
+	User        User   `json:"user" gorm:"foreignKey:UserID;"`
+	Description string `json:"description"`
+}
+
 type ActionRecipeResponse struct {
 	IsSaved bool `json:"is_saved"`
 	IsLiked bool `json:"is_liked"`
@@ -49,17 +56,18 @@ type RecipeResponse struct {
 }
 
 type DetailRecipeResponse struct {
-	ID          string    `json:"id"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Title       string    `json:"title"`
-	SubTitle    string    `json:"sub_title"`
-	AuthorID    string    `json:"author_id"`
-	Author      *Author   `json:"author"`
-	Slug        string    `json:"slug"`
-	Header      string    `json:"header"`
-	Image       string    `json:"image"`
-	Description string    `json:"description"`
-	Saves       []*Save   `json:"saves" gorm:"foreignKey:RecipeID"`
-	Likes       []*Like   `json:"likes" gorm:"foreignKey:RecipeID"`
+	ID          string     `json:"id"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	Title       string     `json:"title"`
+	SubTitle    string     `json:"sub_title"`
+	AuthorID    string     `json:"author_id"`
+	Author      *Author    `json:"author"`
+	Slug        string     `json:"slug"`
+	Header      string     `json:"header"`
+	Image       string     `json:"image"`
+	Description string     `json:"description"`
+	Saves       []*Save    `json:"saves" gorm:"foreignKey:RecipeID"`
+	Likes       []*Like    `json:"likes" gorm:"foreignKey:RecipeID"`
+	Comments    []*Comment `json:"comments" gorm:"foreignKey:RecipeID"`
 }

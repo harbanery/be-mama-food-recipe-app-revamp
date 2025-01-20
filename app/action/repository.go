@@ -15,6 +15,8 @@ type ActionRepository interface {
 	CheckLike(db *gorm.DB, recipeID, userID string) (*string, error)
 	CreateLike(db *gorm.DB, recipeID, userID string) error
 	DeleteLike(db *gorm.DB, recipeID, userID string) error
+	CreateComment(db *gorm.DB, request *CommentRequest, userID string) error
+	DeleteComment(db *gorm.DB, recipeID, userID string) error
 }
 
 type actionRepository struct{}
@@ -88,4 +90,18 @@ func (s *actionRepository) CreateLike(db *gorm.DB, recipeID, userID string) erro
 
 func (s *actionRepository) DeleteLike(db *gorm.DB, recipeID, userID string) error {
 	return db.Unscoped().Delete(&schema.Like{}, idActionQueryParams, recipeID, userID).Error
+}
+
+func (s *actionRepository) CreateComment(db *gorm.DB, request *CommentRequest, userID string) error {
+	data := &schema.Comment{
+		RecipeID:    request.RecipeID,
+		UserID:      userID,
+		Description: request.Description,
+	}
+
+	return db.Create(&data).Error
+}
+
+func (s *actionRepository) DeleteComment(db *gorm.DB, recipeID, userID string) error {
+	return db.Unscoped().Delete(&schema.Comment{}, idActionQueryParams, recipeID, userID).Error
 }

@@ -1,9 +1,10 @@
 package action
 
-type SaveRequest struct {
-	RecipeID string `json:"recipe_id"`
+type ActionRequest struct {
+	RecipeID string `json:"recipe_id" validate:"required"`
 }
 
-type LikeRequest struct {
-	RecipeID string `json:"recipe_id"`
+type CommentRequest struct {
+	RecipeID    string `json:"recipe_id" validate:"required"`
+	Description string `json:"description" validate:"required"`
 }
