@@ -17,7 +17,7 @@ logs
 # Common Configuration Files
 .env
 config.json
-structure.txt
+*.txt
 
 # node_modules Directory
 node_modules/
