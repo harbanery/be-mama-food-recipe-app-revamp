@@ -3,6 +3,7 @@ package config
 import (
 	"mama-recipe/app/account"
 	"mama-recipe/app/action"
+	"mama-recipe/app/asset"
 	"mama-recipe/app/authentication"
 	"mama-recipe/app/recipe"
 	"mama-recipe/helper"
@@ -64,6 +65,10 @@ func Bootstrap(config *BootstrapConfig) {
 	actionUseCase := action.NewActionUseCase(config.DB, config.Validate, actionRepository, config.Environment)
 	actionHandler := action.NewActionHandler(actionUseCase)
 
+	assetRepository := asset.NewAssetRepository()
+	assetUseCase := asset.NewAssetUseCase(config.DB, config.Validate, assetRepository, config.Environment, config.Cloudinary)
+	assetHandler := asset.NewAssetHandler(assetUseCase)
+
 	authMiddleware := middleware.NewAuthMiddleware(config.Environment)
 	bodyMiddleware := middleware.NewBodyMiddleware(config.Policy)
 
@@ -75,6 +80,7 @@ func Bootstrap(config *BootstrapConfig) {
 		AccountHandler: accountHandler,
 		RecipeHandler:  recipeHandler,
 		ActionHandler:  actionHandler,
+		AssetHandler:   assetHandler,
 	}
 
 	route.Setup()

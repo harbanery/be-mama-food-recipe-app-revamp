@@ -96,33 +96,38 @@ func ValidateImageRequest(file *multipart.FileHeader) error {
 		return fiber.NewError(418, "file size exceeds 2MB limit")
 	}
 
-	allowedTypes := []string{"image/jpeg", "image/jpg", "image/png"}
-	if !slices.Contains(allowedTypes, file.Header.Get("Content-Type")) {
-		return fiber.NewError(419, "invalid type file")
-	}
-
-	allowedExtension := []string{"jpeg", "jpg", "png"}
-	splitFileName := strings.Split(file.Filename, ".")
-	extension := splitFileName[len(splitFileName)-1]
-	if !slices.Contains(allowedExtension, extension) {
-		return fiber.NewError(419, "invalid type file")
-	}
-
 	return nil
 }
 
 func ValidateVideoRequest(file *multipart.FileHeader) error {
-	allowedTypes := []string{"video/mp4", "video/webm", "video/ogg"}
-	if !slices.Contains(allowedTypes, file.Header.Get("Content-Type")) {
-		return fiber.NewError(419, "invalid type file")
+	return nil
+}
+
+func ValidateFileRequest(file *multipart.FileHeader) (*string, error) {
+	videoTypes := []string{"video/mp4", "video/webm", "video/ogg"}
+	imageTypes := []string{"image/jpeg", "image/jpg", "image/png"}
+	var fileType string
+
+	if slices.Contains(videoTypes, file.Header.Get("Content-Type")) {
+		fileType = "video"
+		if err := ValidateVideoRequest(file); err != nil {
+			return nil, err
+		}
+	} else if slices.Contains(imageTypes, file.Header.Get("Content-Type")) {
+		fileType = "image"
+		if err := ValidateImageRequest(file); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fiber.NewError(419, "invalid type file")
 	}
 
-	allowedExtension := []string{"mp4", "webm", "ogg"}
+	allowedExtension := []string{"jpeg", "jpg", "png", "mp4", "webm", "ogg"}
 	splitFileName := strings.Split(file.Filename, ".")
 	extension := splitFileName[len(splitFileName)-1]
 	if !slices.Contains(allowedExtension, extension) {
-		return fiber.NewError(419, "invalid type file")
+		return nil, fiber.NewError(419, "invalid type file")
 	}
 
-	return nil
+	return &fileType, nil
 }

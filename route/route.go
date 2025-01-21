@@ -3,6 +3,7 @@ package route
 import (
 	"mama-recipe/app/account"
 	"mama-recipe/app/action"
+	"mama-recipe/app/asset"
 	"mama-recipe/app/authentication"
 	"mama-recipe/app/recipe"
 
@@ -17,6 +18,7 @@ type RouteConfig struct {
 	AccountHandler account.AccountHandler
 	RecipeHandler  recipe.RecipeHandler
 	ActionHandler  action.ActionHandler
+	AssetHandler   asset.AssetHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -24,6 +26,7 @@ func (c *RouteConfig) Setup() {
 	c.AccountRoute()
 	c.RecipeRoute()
 	c.ActionRoute()
+	c.AssetRoute()
 }
 
 func (c *RouteConfig) AuthRoute() {
@@ -57,4 +60,10 @@ func (c *RouteConfig) ActionRoute() {
 	action.Post("/like", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.ActionLike)
 	action.Post("/comment", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.AddComment)
 	action.Delete("/comment", c.AuthMiddleware, c.BodyMiddleware, c.ActionHandler.RemoveComment)
+}
+
+func (c *RouteConfig) AssetRoute() {
+	action := c.App.Group("/upload")
+	action.Post("/", c.BodyMiddleware, c.AssetHandler.UploadFile)
+	action.Delete("/", c.BodyMiddleware, c.AssetHandler.RemoveFile)
 }

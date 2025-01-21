@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"net/url"
 	"path"
 	"path/filepath"
 	"strings"
@@ -40,17 +41,21 @@ func UploadFile(context *context.Context, cloudinary *cloudinary.Cloudinary, fil
 	return &uploadResult.SecureURL, nil
 }
 
-func DeleteFile(context *context.Context, cloudinary *cloudinary.Cloudinary, url *string) error {
-	filenameWithExtension := path.Base(*url)
+func DeleteFile(context *context.Context, cloudinary *cloudinary.Cloudinary, urlString *string) error {
+	filenameWithExtension := path.Base(*urlString)
 
-	filename := strings.TrimSuffix(filenameWithExtension, path.Ext(filenameWithExtension))
+	decodedFilenameWithExtension, err := url.QueryUnescape(filenameWithExtension)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to decode url: "+err.Error())
+	}
+
+	filename := strings.TrimSuffix(decodedFilenameWithExtension, path.Ext(decodedFilenameWithExtension))
 
 	destroyParams := uploader.DestroyParams{
 		PublicID: filename,
 	}
 
-	_, err := cloudinary.Upload.Destroy(*context, destroyParams)
-	if err != nil {
+	if _, err = cloudinary.Upload.Destroy(*context, destroyParams); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
