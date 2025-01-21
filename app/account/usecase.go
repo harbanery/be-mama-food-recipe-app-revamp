@@ -90,7 +90,7 @@ func (c *accountUseCase) UpdateProfilePhoto(ctx *fiber.Ctx) *helper.WebResponse[
 	}
 
 	photo := request.Photo[0]
-	if err := helper.ValidateImageRequest(photo); err != nil {
+	if _, err := helper.ValidateFileRequest(photo); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 

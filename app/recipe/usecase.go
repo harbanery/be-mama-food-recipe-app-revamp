@@ -66,7 +66,7 @@ func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{
 	}
 
 	photo := request.Image[0]
-	if err := helper.ValidateImageRequest(photo); err != nil {
+	if _, err := helper.ValidateFileRequest(photo); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
@@ -77,7 +77,7 @@ func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{
 
 	videos := []*schema.Video{}
 	for _, video := range request.Video {
-		if err := helper.ValidateVideoRequest(video); err != nil {
+		if _, err := helper.ValidateFileRequest(video); err != nil {
 			return helper.Response(ctx, 400, err.Error(), nil)
 		}
 
@@ -227,7 +227,7 @@ func (c *recipeUseCase) UpdateRecipe(ctx *fiber.Ctx) *helper.WebResponse[interfa
 	}
 
 	photo := request.Image[0]
-	if err := helper.ValidateImageRequest(photo); err != nil {
+	if _, err := helper.ValidateFileRequest(photo); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
