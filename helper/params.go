@@ -3,10 +3,11 @@ package helper
 import "github.com/gofiber/fiber/v2"
 
 type ParamsRequest struct {
-	Page    int    `json:"page"`
-	Limit   int    `json:"limit"`
-	Sort    string `json:"sort"`
-	OrderBy string `json:"order_by"`
+	Keywords *string `json:"keywords"`
+	Page     int     `json:"page"`
+	Limit    int     `json:"limit"`
+	Sort     string  `json:"sort"`
+	OrderBy  string  `json:"order_by"`
 }
 
 type ParamsResponse struct {
@@ -25,7 +26,12 @@ func NewParamsRequest(ctx *fiber.Ctx) *ParamsRequest {
 	var limit = 10
 	var sort = "created_at"
 	var orderBy = "desc"
+	var keywords string
 	params := ctx.Queries()
+
+	if params["keywords"] != "" {
+		keywords = ctx.Query("keywords")
+	}
 
 	if params["page"] != "" && params["page"] != "0" {
 		page = ctx.QueryInt("page")
@@ -44,10 +50,11 @@ func NewParamsRequest(ctx *fiber.Ctx) *ParamsRequest {
 	}
 
 	return &ParamsRequest{
-		Page:    page,
-		Limit:   limit,
-		Sort:    sort,
-		OrderBy: orderBy,
+		Keywords: &keywords,
+		Page:     page,
+		Limit:    limit,
+		Sort:     sort,
+		OrderBy:  orderBy,
 	}
 }
 

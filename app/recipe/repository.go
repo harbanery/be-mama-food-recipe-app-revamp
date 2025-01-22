@@ -53,7 +53,9 @@ func (s *recipeRepository) GetRecipes(db *gorm.DB, params *helper.ParamsRequest)
 		query = query.Order(params.Sort + " " + params.OrderBy)
 	}
 
-	query = query.Offset((params.Page - 1) * params.Limit).Limit(params.Limit).Find(&recipes).Count(&recipeCounts.TotalData)
+	query = query.Offset((params.Page-1)*params.Limit).Limit(params.Limit).
+		Where("recipes.title ILIKE ?", "%"+*params.Keywords+"%").
+		Find(&recipes).Count(&recipeCounts.TotalData)
 	recipeCounts.FilteredData = int64(len(recipes))
 
 	if query.Error != nil {
