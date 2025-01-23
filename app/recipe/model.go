@@ -1,7 +1,6 @@
 package recipe
 
 import (
-	"mime/multipart"
 	"time"
 )
 
@@ -33,6 +32,12 @@ type Video struct {
 	URL      string `json:"url"`
 }
 
+type VideoRequest struct {
+	Title  string `json:"title" validate:"required"`
+	Source string `json:"source" validate:"required"`
+	URL    string `json:"url" validate:"required"`
+}
+
 type VideoResponse struct {
 	ID        string    `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -53,14 +58,15 @@ type User struct {
 }
 
 type RecipeRequest struct {
-	ID          string                  `json:"id"`
-	Title       string                  `json:"title" validate:"required"`
-	SubTitle    string                  `json:"sub_title" validate:"required"`
-	Image       []*multipart.FileHeader `json:"image"  validate:"required"`
-	Video       []*multipart.FileHeader `json:"video"`
-	VideoURL    []string                `json:"video_url"`
-	Header      string                  `json:"header" validate:"required"`
-	Description string                  `json:"description" validate:"required"`
+	ID          string   `json:"id"`
+	Title       string   `json:"title" validate:"required"`
+	SubTitle    string   `json:"sub_title"`
+	Image       string   `json:"image" validate:"required"`
+	Video       []string `json:"video"`
+	Header      string   `json:"header"`
+	Description string   `json:"description" validate:"required"`
+	// Image       []*multipart.FileHeader `json:"image"  validate:"required"`
+	// Video       []*multipart.FileHeader `json:"video"`
 }
 
 type RecipeResponse struct {

@@ -45,7 +45,7 @@ const requestCtxKey ctxKey = "fasthttp.RequestCtx"
 
 func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{}] {
 	db := c.DB.WithContext(ctx.Context())
-	context := context.WithValue(ctx.Context(), requestCtxKey, ctx.Context())
+	// context := context.WithValue(ctx.Context(), requestCtxKey, ctx.Context())
 
 	userID := ctx.Locals("id").(string)
 	email := ctx.Locals("email").(string)
@@ -54,46 +54,46 @@ func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{
 	}
 
 	request := new(RecipeRequest)
-	if err := helper.ValidateFormRequest(ctx, c.Validate, request); err != nil {
+	if err := helper.ValidateRequest(ctx, c.Validate, request); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
 	username := helper.UsernameFromEmail(email)
 	slug := helper.ToSlug(request.Title, username)
 
-	if len(request.Image) > 1 {
-		return helper.Response(ctx, 400, "only 1 image allowed", nil)
-	}
+	// if len(request.Image) > 1 {
+	// 	return helper.Response(ctx, 400, "only 1 image allowed", nil)
+	// }
 
-	photo := request.Image[0]
-	if _, err := helper.ValidateFileRequest(photo); err != nil {
-		return helper.Response(ctx, 400, err.Error(), nil)
-	}
+	// photo := request.Image[0]
+	// if _, err := helper.ValidateFileRequest(photo); err != nil {
+	// 	return helper.Response(ctx, 400, err.Error(), nil)
+	// }
 
-	photoUrl, err := helper.UploadFile(&context, c.Cloudinary, photo)
-	if err != nil {
-		return helper.Response(ctx, 400, err.Error(), nil)
-	}
+	// photoUrl, err := helper.UploadFile(&context, c.Cloudinary, photo)
+	// if err != nil {
+	// 	return helper.Response(ctx, 400, err.Error(), nil)
+	// }
 
 	videos := []*schema.Video{}
-	for _, video := range request.Video {
-		if _, err := helper.ValidateFileRequest(video); err != nil {
-			return helper.Response(ctx, 400, err.Error(), nil)
-		}
+	// for _, video := range request.Video {
+	// 	if _, err := helper.ValidateFileRequest(video); err != nil {
+	// 		return helper.Response(ctx, 400, err.Error(), nil)
+	// 	}
 
-		videoUrl, err := helper.UploadFile(&context, c.Cloudinary, video)
-		if err != nil {
-			return helper.Response(ctx, 400, err.Error(), nil)
-		}
+	// 	videoUrl, err := helper.UploadFile(&context, c.Cloudinary, video)
+	// 	if err != nil {
+	// 		return helper.Response(ctx, 400, err.Error(), nil)
+	// 	}
 
-		videos = append(videos, &schema.Video{
-			Title:  request.Title,
-			Source: "upload",
-			URL:    *videoUrl,
-		})
-	}
+	// 	videos = append(videos, &schema.Video{
+	// 		Title:  request.Title,
+	// 		Source: "upload",
+	// 		URL:    *videoUrl,
+	// 	})
+	// }
 
-	for _, videoUrl := range request.VideoURL {
+	for _, videoUrl := range request.Video {
 		videos = append(videos, &schema.Video{
 			Title:  request.Title,
 			Source: "url",
@@ -106,7 +106,7 @@ func (c *recipeUseCase) AddRecipe(ctx *fiber.Ctx) *helper.WebResponse[interface{
 		SubTitle:    request.SubTitle,
 		Slug:        slug,
 		Header:      request.Header,
-		Image:       *photoUrl,
+		Image:       request.Image,
 		Videos:      videos,
 		Description: request.Description,
 		AuthorID:    userID,
@@ -226,20 +226,21 @@ func (c *recipeUseCase) UpdateRecipe(ctx *fiber.Ctx) *helper.WebResponse[interfa
 		return helper.Response(ctx, 400, "unauthorized", nil)
 	}
 
-	photo := request.Image[0]
-	if _, err := helper.ValidateFileRequest(photo); err != nil {
-		return helper.Response(ctx, 400, err.Error(), nil)
-	}
+	// photo := request.Image[0]
+	// if _, err := helper.ValidateFileRequest(photo); err != nil {
+	// 	return helper.Response(ctx, 400, err.Error(), nil)
+	// }
 
-	photoUrl, err := helper.UploadFile(&context, c.Cloudinary, photo)
-	if err != nil {
-		return helper.Response(ctx, 400, err.Error(), nil)
-	}
+	// photoUrl, err := helper.UploadFile(&context, c.Cloudinary, photo)
+	// if err != nil {
+	// 	return helper.Response(ctx, 400, err.Error(), nil)
+	// }
 
-	if photoUrl == &recipe.Image {
+	if &request.Image != &recipe.Image {
 		if err := helper.DeleteFile(&context, c.Cloudinary, &recipe.Image); err != nil {
 			return helper.Response(ctx, 400, err.Error(), nil)
 		}
+		recipe.Image = request.Image
 	}
 
 	recipe.Title = request.Title
@@ -248,7 +249,7 @@ func (c *recipeUseCase) UpdateRecipe(ctx *fiber.Ctx) *helper.WebResponse[interfa
 	recipe.Description = request.Description
 
 	if err := c.RecipeRepository.EditRecipe(db, recipe.ID, recipe); err != nil {
-		return helper.Response(ctx, 400, err.Error(), helper.EmptyObject())
+		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
 	return helper.Response(ctx, 200, "edit recipe success", nil)
