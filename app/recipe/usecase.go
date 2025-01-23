@@ -213,7 +213,7 @@ func (c *recipeUseCase) UpdateRecipe(ctx *fiber.Ctx) *helper.WebResponse[interfa
 	}
 
 	request := new(RecipeRequest)
-	if err := helper.ValidateFormRequest(ctx, c.Validate, request); err != nil {
+	if err := helper.ValidateRequest(ctx, c.Validate, request); err != nil {
 		return helper.Response(ctx, 400, err.Error(), nil)
 	}
 
